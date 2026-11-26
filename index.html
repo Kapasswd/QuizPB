@@ -24,6 +24,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             width: 100%;
             max-width: 600px;
+            position: relative;
         }
         .header {
             display: flex;
@@ -182,6 +183,29 @@
             color: #777;
             font-weight: normal;
         }
+
+        /* Новая вкладка для лидеров */
+        .top-nav {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+        .nav-btn {
+            background-color: transparent;
+            color: #3498db;
+            border: 2px solid transparent;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: auto;
+        }
+        .nav-btn:hover {
+            background-color: #ecf0f1;
+        }
     </style>
 </head>
 <body>
@@ -189,7 +213,10 @@
 <div class="container">
     <!-- Секция выбора категории -->
     <div id="start-section">
-        <div class="question-title">🎓 Выберите категорию теста</div>
+        <div class="top-nav">
+            <button class="nav-btn" onclick="showLeaderboardFromMenu()">🏆 Таблица лидеров</button>
+        </div>
+        <div class="question-title" style="margin-top: 0;">🎓 Выберите категорию теста</div>
         <p style="text-align: center; color: #777; margin-top: -10px;">
             От этого зависит набор вопросов и сложность
         </p>
@@ -257,7 +284,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const firebaseConfig = {
+    const firebaseConfig = {
         apiKey: "AIzaSyB-FUlrx06QNujYr023E2chZJHHUdIfE",
         authDomain: "test-83589.firebaseapp.com",
         projectId: "test-83589",
@@ -297,7 +324,7 @@
             document.getElementById("result-section").style.display = "none";
             document.getElementById("leaderboard-section").style.display = "block";
 
-            loadLeaderboard();
+            window.loadLeaderboard();
         } catch (e) {
             console.error("Ошибка добавления документа: ", e);
             alert("Ошибка сохранения. Проверьте настройки Firebase.");
@@ -306,7 +333,8 @@
         }
     };
 
-    async function loadLeaderboard() {
+    // Делаем функцию глобальной, чтобы её можно было вызвать с главного экрана
+    window.loadLeaderboard = async function() {
         const tbody = document.getElementById("leaderboard-body");
         tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Загрузка...</td></tr>";
 
@@ -415,7 +443,6 @@
         { date: "Последнее воскресенье ноября", name: "День матери" }
     ];
 
-    // Заполняем счётчики на стартовом экране
     document.querySelector('.numbers-count').textContent = documents.length;
     document.querySelector('.dates-count').textContent = holidaysData.length;
     document.querySelector('.mixed-count').textContent = documents.length + holidaysData.length;
@@ -424,7 +451,7 @@
     let score = 0;
     let finalQuestions = [];
     let selectedCategory = 'mixed';
-    let pendingTimeout = null; // для отмены отложенного перехода при возврате
+    let pendingTimeout = null;
 
     window.currentTotal = documents.length + holidaysData.length;
     window.currentCategory = 'mixed';
@@ -451,20 +478,16 @@
         initQuiz();
     }
 
-    // Возврат к выбору категории
     function backToMenu() {
-        // Отменяем отложенный переход, если он был
         if (pendingTimeout) {
             clearTimeout(pendingTimeout);
             pendingTimeout = null;
         }
 
-        // Сброс состояния
         currentQuestionIndex = 0;
         score = 0;
         finalQuestions = [];
 
-        // Сброс интерфейса
         document.getElementById("score").innerText = "Счет: 0";
         document.getElementById("options-container").innerHTML = "";
         document.getElementById("question-counter").innerText = "Вопрос 1 из X";
@@ -475,16 +498,26 @@
         saveBtn.disabled = false;
         saveBtn.innerText = "Сохранить в таблицу лидеров";
 
-        // Переключение секций
         document.getElementById("quiz-section").style.display = "none";
         document.getElementById("result-section").style.display = "none";
         document.getElementById("leaderboard-section").style.display = "none";
         document.getElementById("start-section").style.display = "block";
     }
 
-    // Делаем функции глобальными (для onclick в HTML)
+    // Функция для просмотра лидеров с главного экрана
+    function showLeaderboardFromMenu() {
+        document.getElementById("start-section").style.display = "none";
+        document.getElementById("leaderboard-section").style.display = "block";
+        
+        // Вызываем функцию загрузки из модуля Firebase
+        if (window.loadLeaderboard) {
+            window.loadLeaderboard();
+        }
+    }
+
     window.startQuiz = startQuiz;
     window.backToMenu = backToMenu;
+    window.showLeaderboardFromMenu = showLeaderboardFromMenu;
 
     function initQuiz() {
         let docQuestions = [];
@@ -609,8 +642,6 @@
         currentQuestionIndex++;
         showQuestion();
     }
-
-    // Тест стартует только после клика по кнопке категории
 </script>
 
 </body>
