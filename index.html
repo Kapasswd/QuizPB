@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Интерактивный тест на знание государственных праздников, нормативных актов и строения Профсоюза образования.">
+    <!-- SEO: Добавлен canonical URL (замените ссылку на свой реальный домен, если он появится) -->
+    <link rel="canonical" href="https://kapasswd.github.io/QuizPB/">
     <title>Тест: Праздники и Нормативные акты</title>
     <style>
         body {
@@ -97,7 +100,6 @@
         .save-btn { background-color: #27ae60; margin-top: 10px;}
         .save-btn:hover { background-color: #219150; }
 
-        /* Кнопка "Назад" */
         .back-btn {
             display: inline-flex;
             align-items: center;
@@ -120,7 +122,6 @@
             text-decoration: underline;
         }
 
-        /* Стили для таблицы лидеров */
         .input-name {
             padding: 12px;
             font-size: 16px;
@@ -150,7 +151,6 @@
         .leaderboard-table tr:nth-child(2) td { font-weight: bold; color: #95a5a6; }
         .leaderboard-table tr:nth-child(3) td { font-weight: bold; color: #d35400; }
 
-        /* Стили для выбора категории */
         .category-buttons {
             display: flex;
             flex-direction: column;
@@ -184,7 +184,6 @@
             font-weight: normal;
         }
 
-        /* Новая вкладка для лидеров */
         .top-nav {
             display: flex;
             justify-content: flex-end;
@@ -206,39 +205,128 @@
         .nav-btn:hover {
             background-color: #ecf0f1;
         }
+
+        .pyramid-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+        .slot {
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #95a5a6;
+            font-size: 14px;
+            transition: all 0.3s;
+            background-color: #fafafa;
+            box-sizing: border-box;
+        }
+        .slot.correct {
+            border-style: solid;
+            border-color: #28a745;
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .slot.drag-over {
+            border-color: #3498db;
+            background-color: #e3f2fd;
+            transform: scale(1.02);
+        }
+        .slot.error-flash {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        #pyramid-container .slot:nth-child(1) { width: 50%; }
+        #pyramid-container .slot:nth-child(2) { width: 60%; }
+        #pyramid-container .slot:nth-child(3) { width: 70%; }
+        #pyramid-container .slot:nth-child(4) { width: 80%; }
+        #pyramid-container .slot:nth-child(5) { width: 90%; }
+        #pyramid-container .slot:nth-child(6) { width: 100%; }
+
+        #ppo-pyramid-container .slot:nth-child(1) { width: 60%; }
+        #ppo-pyramid-container .slot:nth-child(2) { width: 70%; }
+        #ppo-pyramid-container .slot:nth-child(3) { width: 80%; }
+        #ppo-pyramid-container .slot:nth-child(4) { width: 90%; }
+        #ppo-pyramid-container .slot:nth-child(5) { width: 100%; }
+
+        .pool-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            padding: 15px;
+            background: #f4f7f6;
+            border-radius: 8px;
+            min-height: 80px;
+            border: 2px dashed #e0e0e0;
+        }
+        .draggable {
+            padding: 10px 15px;
+            background-color: white;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            cursor: grab;
+            font-size: 14px;
+            font-weight: bold;
+            color: #2c3e50;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.1s;
+        }
+        .draggable:active {
+            cursor: grabbing;
+        }
+        .draggable.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- Секция выбора категории -->
     <div id="start-section">
         <div class="top-nav">
-            <button class="nav-btn" onclick="showLeaderboardFromMenu()">🏆 Таблица лидеров</button>
+            <button class="nav-btn">🏆 Таблица лидеров</button>
         </div>
-        <div class="question-title" style="margin-top: 0;">🎓 Выберите категорию теста</div>
+        <h1 class="question-title" style="margin-top: 0;">🎓 Выберите категорию теста</h1>
         <p style="text-align: center; color: #777; margin-top: -10px;">
             От этого зависит набор вопросов и сложность
         </p>
         <div class="category-buttons">
-            <button class="category-btn" onclick="startQuiz('numbers')">
+            <button class="category-btn" data-category="numbers">
                 <span>📄 Только документы</span>
                 <span class="category-desc"><span class="numbers-count">21</span> вопрос о нормативных актах</span>
             </button>
-            <button class="category-btn" onclick="startQuiz('dates')">
+            <button class="category-btn" data-category="dates">
                 <span>📅 Только даты</span>
                 <span class="category-desc"><span class="dates-count">45</span> вопросов о праздниках</span>
             </button>
-            <button class="category-btn" onclick="startQuiz('mixed')">
+            <button class="category-btn" data-category="mixed">
                 <span>🎯 Смешанный</span>
                 <span class="category-desc"><span class="mixed-count">66</span> вопросов: даты + документы</span>
+            </button>
+            <button class="category-btn" data-category="union" style="border-color: #27ae60;">
+                <span>🏛️ Строение Профсоюза</span>
+                <span class="category-desc">Соберите пирамиду органов Профсоюза</span>
+            </button>
+            <button class="category-btn" data-category="ppo" style="border-color: #f39c12;">
+                <span>🏢 Строение ППО</span>
+                <span class="category-desc">Соберите пирамиду первичной организации</span>
             </button>
         </div>
     </div>
 
-    <!-- Секция теста -->
     <div id="quiz-section" style="display: none;">
-        <button class="back-btn" onclick="backToMenu()">← Назад к выбору категории</button>
+        <button class="back-btn">← Назад к выбору категории</button>
         <div class="header">
             <span id="question-counter">Вопрос 1 из X</span>
             <span id="score">Счет: 0</span>
@@ -247,21 +335,20 @@
         <div class="options" id="options-container"></div>
     </div>
 
-    <!-- Секция результатов -->
     <div class="result" id="result-section">
-        <button class="back-btn" onclick="backToMenu()">← Назад к выбору категории</button>
+        <button class="back-btn">← Назад к выбору категории</button>
         <h2>Тест завершен!</h2>
         <p>Ваш результат: <span id="final-score">0</span> из <span id="total-questions">0</span></p>
 
+        <label for="player-name" style="display: none;">Ваше имя</label>
         <input type="text" id="player-name" class="input-name" placeholder="Введите ваше имя" maxlength="20">
-        <button class="save-btn" id="save-score-btn" onclick="saveScore()">Сохранить в таблицу лидеров</button>
-
-        <button class="restart-btn" onclick="location.reload()">Пройти заново</button>
+        
+        <button class="save-btn" id="save-score-btn">Сохранить в таблицу лидеров</button>
+        <button class="restart-btn refresh-btn">Пройти заново</button>
     </div>
 
-    <!-- Секция таблицы лидеров -->
     <div id="leaderboard-section" style="display: none;">
-        <button class="back-btn" onclick="backToMenu()">← Назад к выбору категории</button>
+        <button class="back-btn">← Назад к выбору категории</button>
         <h2 style="text-align: center; color: #2c3e50;">🏆 Таблица лидеров</h2>
         <table class="leaderboard-table" id="leaderboard" style="display: table;">
             <thead>
@@ -275,11 +362,42 @@
                 <tr><td colspan="3" style="text-align:center;">Загрузка данных...</td></tr>
             </tbody>
         </table>
-        <button class="restart-btn" onclick="location.reload()">Пройти тест еще раз</button>
+        <button class="restart-btn refresh-btn">Пройти тест еще раз</button>
+    </div>
+
+    <div id="union-section" style="display: none;">
+        <button class="back-btn">← Назад к выбору категории</button>
+        <h2 class="question-title">🏛️ Пирамида Профсоюза</h2>
+        <p style="text-align: center; color: #777; margin-top: -15px; font-size: 14px; margin-bottom: 20px;">
+            Перетащите названия из нижнего блока в нужные ячейки сверху вниз.
+        </p>
+
+        <div class="pyramid-container" id="pyramid-container"></div>
+        <div class="pool-container" id="pool-container"></div>
+
+        <div id="union-result" style="display: none; text-align: center; margin-top: 25px;">
+            <h2 style="color: #27ae60; font-size: 20px;">🎉 Отлично! Пирамида собрана абсолютно верно!</h2>
+            <button class="restart-btn back-btn-trigger" style="background-color: #3498db;">Вернуться в главное меню</button>
+        </div>
+    </div>
+
+    <div id="ppo-section" style="display: none;">
+        <button class="back-btn">← Назад к выбору категории</button>
+        <h2 class="question-title">🏢 Пирамида ППО</h2>
+        <p style="text-align: center; color: #777; margin-top: -15px; font-size: 14px; margin-bottom: 20px;">
+            Перетащите названия из нижнего блока в нужные ячейки сверху вниз.
+        </p>
+
+        <div class="pyramid-container" id="ppo-pyramid-container"></div>
+        <div class="pool-container" id="ppo-pool-container"></div>
+
+        <div id="ppo-result" style="display: none; text-align: center; margin-top: 25px;">
+            <h2 style="color: #27ae60; font-size: 20px;">🎉 Отлично! Пирамида ППО собрана абсолютно верно!</h2>
+            <button class="restart-btn ppo-back-trigger" style="background-color: #3498db;">Вернуться в главное меню</button>
+        </div>
     </div>
 </div>
 
-<!-- 1. ПОДКЛЮЧАЕМ FIREBASE SDK -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -333,19 +451,34 @@
         }
     };
 
-    // Делаем функцию глобальной, чтобы её можно было вызвать с главного экрана
+    document.getElementById('save-score-btn').addEventListener('click', window.saveScore);
+
     window.loadLeaderboard = async function() {
         const tbody = document.getElementById("leaderboard-body");
-        tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Загрузка...</td></tr>";
+        // Безопасная очистка и добавление статичного текста
+        tbody.textContent = "";
+        const trLoad = document.createElement("tr");
+        const tdLoad = document.createElement("td");
+        tdLoad.colSpan = 3;
+        tdLoad.style.textAlign = "center";
+        tdLoad.textContent = "Загрузка...";
+        trLoad.appendChild(tdLoad);
+        tbody.appendChild(trLoad);
 
         try {
             const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(10));
             const querySnapshot = await getDocs(q);
 
-            tbody.innerHTML = "";
+            tbody.textContent = ""; // Очистка
 
             if (querySnapshot.empty) {
-                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Пока нет результатов. Будьте первым!</td></tr>";
+                const trEmpty = document.createElement("tr");
+                const tdEmpty = document.createElement("td");
+                tdEmpty.colSpan = 3;
+                tdEmpty.style.textAlign = "center";
+                tdEmpty.textContent = "Пока нет результатов. Будьте первым!";
+                trEmpty.appendChild(tdEmpty);
+                tbody.appendChild(trEmpty);
                 return;
             }
 
@@ -353,23 +486,40 @@
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
                 const total = data.total || 66;
+                
                 const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${rank}</td>
-                    <td>${data.name}</td>
-                    <td>${data.score} / ${total}</td>
-                `;
+                
+                const tdRank = document.createElement("td");
+                tdRank.textContent = rank;
+                
+                const tdName = document.createElement("td");
+                tdName.textContent = data.name;
+                
+                const tdScore = document.createElement("td");
+                tdScore.textContent = `${data.score} / ${total}`;
+                
+                tr.appendChild(tdRank);
+                tr.appendChild(tdName);
+                tr.appendChild(tdScore);
                 tbody.appendChild(tr);
+                
                 rank++;
             });
         } catch (e) {
             console.error("Ошибка загрузки: ", e);
-            tbody.innerHTML = "<tr><td colspan='3' style='text-align:center; color:red;'>Ошибка загрузки данных</td></tr>";
+            tbody.textContent = ""; 
+            const trErr = document.createElement("tr");
+            const tdErr = document.createElement("td");
+            tdErr.colSpan = 3;
+            tdErr.style.textAlign = "center";
+            tdErr.style.color = "red";
+            tdErr.textContent = "Ошибка загрузки данных";
+            trErr.appendChild(tdErr);
+            tbody.appendChild(trErr);
         }
     }
 </script>
 
-<!-- 2. ЛОГИКА САМОГО ТЕСТА -->
 <script>
     const documents = [
         { id: "1390", title: "О формировании стипендиального фонда" },
@@ -474,6 +624,8 @@
         document.getElementById("quiz-section").style.display = "block";
         document.getElementById("result-section").style.display = "none";
         document.getElementById("leaderboard-section").style.display = "none";
+        document.getElementById("union-section").style.display = "none";
+        document.getElementById("ppo-section").style.display = "none";
 
         initQuiz();
     }
@@ -489,9 +641,9 @@
         finalQuestions = [];
 
         document.getElementById("score").innerText = "Счет: 0";
-        document.getElementById("options-container").innerHTML = "";
+        document.getElementById("options-container").textContent = "";
         document.getElementById("question-counter").innerText = "Вопрос 1 из X";
-        document.getElementById("question-text").innerHTML = "";
+        document.getElementById("question-text").textContent = "";
         document.getElementById("player-name").value = "";
 
         const saveBtn = document.getElementById("save-score-btn");
@@ -501,23 +653,19 @@
         document.getElementById("quiz-section").style.display = "none";
         document.getElementById("result-section").style.display = "none";
         document.getElementById("leaderboard-section").style.display = "none";
+        document.getElementById("union-section").style.display = "none";
+        document.getElementById("ppo-section").style.display = "none";
         document.getElementById("start-section").style.display = "block";
     }
 
-    // Функция для просмотра лидеров с главного экрана
     function showLeaderboardFromMenu() {
         document.getElementById("start-section").style.display = "none";
         document.getElementById("leaderboard-section").style.display = "block";
         
-        // Вызываем функцию загрузки из модуля Firebase
         if (window.loadLeaderboard) {
             window.loadLeaderboard();
         }
     }
-
-    window.startQuiz = startQuiz;
-    window.backToMenu = backToMenu;
-    window.showLeaderboardFromMenu = showLeaderboardFromMenu;
 
     function initQuiz() {
         let docQuestions = [];
@@ -604,10 +752,25 @@
 
         const q = finalQuestions[currentQuestionIndex];
         document.getElementById("question-counter").innerText = `Вопрос ${currentQuestionIndex + 1} из ${finalQuestions.length}`;
-        document.getElementById("question-text").innerHTML = q.text;
+        
+        // ИСПРАВЛЕНИЕ ПРЕДУПРЕЖДЕНИЯ БЕЗОПАСНОСТИ: 
+        // Вместо innerHTML используем безопасное создание узлов DOM
+        const questionTextEl = document.getElementById("question-text");
+        questionTextEl.textContent = ""; 
+        
+        const parts = q.text.split(/(<b>.*?<\/b>)/g);
+        parts.forEach(part => {
+            if (part.startsWith('<b>') && part.endsWith('</b>')) {
+                const b = document.createElement('b');
+                b.textContent = part.slice(3, -4);
+                questionTextEl.appendChild(b);
+            } else if (part) {
+                questionTextEl.appendChild(document.createTextNode(part));
+            }
+        });
 
         const optionsContainer = document.getElementById("options-container");
-        optionsContainer.innerHTML = "";
+        optionsContainer.textContent = "";
 
         q.options.forEach(option => {
             const btn = document.createElement("button");
@@ -633,7 +796,7 @@
                     btn.classList.add("correct");
                 }
             });
-            pendingTimeout = setTimeout(nextQuestion, 3000);
+            pendingTimeout = setTimeout(nextQuestion, 1000);
         }
     }
 
@@ -642,6 +805,261 @@
         currentQuestionIndex++;
         showQuestion();
     }
+
+    const unionItems = [
+        { id: "item1", name: "Съезд Профсоюза" },
+        { id: "item2", name: "Центральный Совет" },
+        { id: "item3", name: "Исполком" },
+        { id: "item4", name: "Председатель" },
+        { id: "item5", name: "Президент" },
+        { id: "item6", name: "КРК" }
+    ];
+
+    const correctOrder = [
+        "Съезд Профсоюза",
+        "Центральный Совет",
+        "Исполком",
+        "Председатель",
+        "Президент",
+        "КРК"
+    ];
+
+    function startUnionGame() {
+        document.getElementById("start-section").style.display = "none";
+        document.getElementById("union-section").style.display = "block";
+        document.getElementById("union-result").style.display = "none";
+        initUnionGame();
+    }
+
+    function initUnionGame() {
+        const pyramidContainer = document.getElementById("pyramid-container");
+        const poolContainer = document.getElementById("pool-container");
+
+        pyramidContainer.textContent = "";
+        poolContainer.textContent = "";
+
+        correctOrder.forEach((name, index) => {
+            const slot = document.createElement("div");
+            slot.className = "slot";
+            slot.dataset.expected = name;
+            slot.innerText = `Уровень ${index + 1}`; 
+            
+            slot.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                if (!slot.classList.contains("correct")) {
+                    slot.classList.add("drag-over");
+                }
+            });
+
+            slot.addEventListener("dragleave", () => {
+                slot.classList.remove("drag-over");
+            });
+
+            slot.addEventListener("drop", (e) => {
+                e.preventDefault();
+                slot.classList.remove("drag-over");
+                if (slot.classList.contains("correct")) return;
+
+                const draggedId = e.dataTransfer.getData("text/plain");
+                const draggedElement = document.getElementById(draggedId);
+
+                if (draggedElement) {
+                    if (draggedElement.dataset.name === slot.dataset.expected) {
+                        slot.innerText = draggedElement.dataset.name;
+                        slot.classList.add("correct");
+                        slot.dataset.filled = "true";
+                        draggedElement.remove(); 
+                        checkUnionWin();
+                    } else {
+                        slot.innerText = "Неверно!";
+                        slot.classList.add("error-flash");
+                        setTimeout(() => {
+                            if (!slot.classList.contains("correct")) {
+                                slot.innerText = `Уровень ${parseInt(slot.dataset.index) + 1}`;
+                                slot.classList.remove("error-flash");
+                            }
+                        }, 1000);
+                    }
+                }
+            });
+
+            slot.dataset.index = index;
+            pyramidContainer.appendChild(slot);
+        });
+
+        const shuffledItems = [...unionItems].sort(() => Math.random() - 0.5);
+
+        shuffledItems.forEach(item => {
+            const dragItem = document.createElement("div");
+            dragItem.className = "draggable";
+            dragItem.id = item.id;
+            dragItem.innerText = item.name;
+            dragItem.dataset.name = item.name;
+            dragItem.draggable = true;
+
+            dragItem.addEventListener("dragstart", (e) => {
+                e.dataTransfer.setData("text/plain", dragItem.id);
+                dragItem.classList.add("dragging");
+            });
+
+            dragItem.addEventListener("dragend", () => {
+                dragItem.classList.remove("dragging");
+            });
+
+            poolContainer.appendChild(dragItem);
+        });
+    }
+
+    function checkUnionWin() {
+        const correctSlots = document.querySelectorAll("#pyramid-container .slot.correct");
+        if (correctSlots.length === 6) {
+            document.getElementById("union-result").style.display = "block";
+        }
+    }
+
+    const ppoItems = [
+        { id: "ppo1", name: "Собрание(Конференция)" },
+        { id: "ppo2", name: "Проф комитет" },
+        { id: "ppo3", name: "Президиум" },
+        { id: "ppo4", name: "Председатель" },
+        { id: "ppo5", name: "КРК" }
+    ];
+
+    const ppoCorrectOrder = [
+        "Собрание(Конференция)",
+        "Проф комитет",
+        "Президиум",
+        "Председатель",
+        "КРК"
+    ];
+
+    function startPpoGame() {
+        document.getElementById("start-section").style.display = "none";
+        document.getElementById("ppo-section").style.display = "block";
+        document.getElementById("ppo-result").style.display = "none";
+        initPpoGame();
+    }
+
+    function initPpoGame() {
+        const pyramidContainer = document.getElementById("ppo-pyramid-container");
+        const poolContainer = document.getElementById("ppo-pool-container");
+
+        pyramidContainer.textContent = "";
+        poolContainer.textContent = "";
+
+        ppoCorrectOrder.forEach((name, index) => {
+            const slot = document.createElement("div");
+            slot.className = "slot";
+            slot.dataset.expected = name;
+            slot.innerText = `Уровень ${index + 1}`; 
+            
+            slot.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                if (!slot.classList.contains("correct")) {
+                    slot.classList.add("drag-over");
+                }
+            });
+
+            slot.addEventListener("dragleave", () => {
+                slot.classList.remove("drag-over");
+            });
+
+            slot.addEventListener("drop", (e) => {
+                e.preventDefault();
+                slot.classList.remove("drag-over");
+                if (slot.classList.contains("correct")) return;
+
+                const draggedId = e.dataTransfer.getData("text/plain");
+                const draggedElement = document.getElementById(draggedId);
+
+                if (draggedElement) {
+                    if (draggedElement.dataset.name === slot.dataset.expected) {
+                        slot.innerText = draggedElement.dataset.name;
+                        slot.classList.add("correct");
+                        slot.dataset.filled = "true";
+                        draggedElement.remove(); 
+                        checkPpoWin();
+                    } else {
+                        slot.innerText = "Неверно!";
+                        slot.classList.add("error-flash");
+                        setTimeout(() => {
+                            if (!slot.classList.contains("correct")) {
+                                slot.innerText = `Уровень ${parseInt(slot.dataset.index) + 1}`;
+                                slot.classList.remove("error-flash");
+                            }
+                        }, 1000);
+                    }
+                }
+            });
+
+            slot.dataset.index = index;
+            pyramidContainer.appendChild(slot);
+        });
+
+        const shuffledItems = [...ppoItems].sort(() => Math.random() - 0.5);
+
+        shuffledItems.forEach(item => {
+            const dragItem = document.createElement("div");
+            dragItem.className = "draggable";
+            dragItem.id = item.id;
+            dragItem.innerText = item.name;
+            dragItem.dataset.name = item.name;
+            dragItem.draggable = true;
+
+            dragItem.addEventListener("dragstart", (e) => {
+                e.dataTransfer.setData("text/plain", dragItem.id);
+                dragItem.classList.add("dragging");
+            });
+
+            dragItem.addEventListener("dragend", () => {
+                dragItem.classList.remove("dragging");
+            });
+
+            poolContainer.appendChild(dragItem);
+        });
+    }
+
+    function checkPpoWin() {
+        const correctSlots = document.querySelectorAll("#ppo-pyramid-container .slot.correct");
+        if (correctSlots.length === 5) {
+            document.getElementById("ppo-result").style.display = "block";
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const cat = e.currentTarget.dataset.category;
+                if (cat === 'union') {
+                    startUnionGame();
+                } else if (cat === 'ppo') {
+                    startPpoGame();
+                } else {
+                    startQuiz(cat);
+                }
+            });
+        });
+
+        document.querySelector('.nav-btn').addEventListener('click', showLeaderboardFromMenu);
+
+        document.querySelectorAll('.back-btn').forEach(btn => {
+            btn.addEventListener('click', backToMenu);
+        });
+
+        document.querySelectorAll('.refresh-btn').forEach(btn => {
+            btn.addEventListener('click', () => window.location.reload());
+        });
+
+        const unionBackBtn = document.querySelector('.back-btn-trigger');
+        if(unionBackBtn) {
+            unionBackBtn.addEventListener('click', backToMenu);
+        }
+
+        const ppoBackBtn = document.querySelector('.ppo-back-trigger');
+        if(ppoBackBtn) {
+            ppoBackBtn.addEventListener('click', backToMenu);
+        }
+    });
 </script>
 
 </body>
