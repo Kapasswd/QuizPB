@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Интерактивный тест на знание государственных праздников, нормативных актов и строения Профсоюза образования.">
-    <!-- SEO: Добавлен canonical URL (замените ссылку на свой реальный домен, если он появится) -->
     <link rel="canonical" href="https://kapasswd.github.io/QuizPB/">
     <title>Тест: Праздники и Нормативные акты</title>
     <style>
@@ -226,17 +225,18 @@
             transition: all 0.3s;
             background-color: #fafafa;
             box-sizing: border-box;
+            cursor: pointer;
+        }
+        .slot:hover:not(.correct) {
+            border-color: #3498db;
+            background-color: #eef6fd;
         }
         .slot.correct {
             border-style: solid;
             border-color: #28a745;
             background-color: #d4edda;
             color: #155724;
-        }
-        .slot.drag-over {
-            border-color: #3498db;
-            background-color: #e3f2fd;
-            transform: scale(1.02);
+            cursor: default;
         }
         .slot.error-flash {
             border-color: #dc3545;
@@ -273,20 +273,24 @@
             background-color: white;
             border: 2px solid #3498db;
             border-radius: 8px;
-            cursor: grab;
+            cursor: pointer;
             font-size: 14px;
             font-weight: bold;
             color: #2c3e50;
             user-select: none;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: transform 0.1s;
+            transition: all 0.15s;
         }
-        .draggable:active {
-            cursor: grabbing;
+        .draggable:hover {
+            background-color: #eef6fd;
+            transform: translateY(-1px);
         }
-        .draggable.dragging {
-            opacity: 0.5;
-            transform: scale(0.95);
+        .draggable.selected {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.35);
         }
     </style>
 </head>
@@ -369,7 +373,7 @@
         <button class="back-btn">← Назад к выбору категории</button>
         <h2 class="question-title">🏛️ Пирамида Профсоюза</h2>
         <p style="text-align: center; color: #777; margin-top: -15px; font-size: 14px; margin-bottom: 20px;">
-            Перетащите названия из нижнего блока в нужные ячейки сверху вниз.
+            Нажмите на название из бланка ответов, затем нажмите на нужный слой пирамиды сверху вниз.
         </p>
 
         <div class="pyramid-container" id="pyramid-container"></div>
@@ -385,7 +389,7 @@
         <button class="back-btn">← Назад к выбору категории</button>
         <h2 class="question-title">🏢 Пирамида ППО</h2>
         <p style="text-align: center; color: #777; margin-top: -15px; font-size: 14px; margin-bottom: 20px;">
-            Перетащите названия из нижнего блока в нужные ячейки сверху вниз.
+            Нажмите на название из бланка ответов, затем нажмите на нужный слой пирамиды сверху вниз.
         </p>
 
         <div class="pyramid-container" id="ppo-pyramid-container"></div>
@@ -455,7 +459,6 @@
 
     window.loadLeaderboard = async function() {
         const tbody = document.getElementById("leaderboard-body");
-        // Безопасная очистка и добавление статичного текста
         tbody.textContent = "";
         const trLoad = document.createElement("tr");
         const tdLoad = document.createElement("td");
@@ -469,7 +472,7 @@
             const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(10));
             const querySnapshot = await getDocs(q);
 
-            tbody.textContent = ""; // Очистка
+            tbody.textContent = "";
 
             if (querySnapshot.empty) {
                 const trEmpty = document.createElement("tr");
@@ -486,28 +489,28 @@
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
                 const total = data.total || 66;
-                
+
                 const tr = document.createElement("tr");
-                
+
                 const tdRank = document.createElement("td");
                 tdRank.textContent = rank;
-                
+
                 const tdName = document.createElement("td");
                 tdName.textContent = data.name;
-                
+
                 const tdScore = document.createElement("td");
                 tdScore.textContent = `${data.score} / ${total}`;
-                
+
                 tr.appendChild(tdRank);
                 tr.appendChild(tdName);
                 tr.appendChild(tdScore);
                 tbody.appendChild(tr);
-                
+
                 rank++;
             });
         } catch (e) {
             console.error("Ошибка загрузки: ", e);
-            tbody.textContent = ""; 
+            tbody.textContent = "";
             const trErr = document.createElement("tr");
             const tdErr = document.createElement("td");
             tdErr.colSpan = 3;
@@ -639,6 +642,8 @@
         currentQuestionIndex = 0;
         score = 0;
         finalQuestions = [];
+        unionSelectedItem = null;
+        ppoSelectedItem = null;
 
         document.getElementById("score").innerText = "Счет: 0";
         document.getElementById("options-container").textContent = "";
@@ -753,8 +758,6 @@
         const q = finalQuestions[currentQuestionIndex];
         document.getElementById("question-counter").innerText = `Вопрос ${currentQuestionIndex + 1} из ${finalQuestions.length}`;
         
-        // ИСПРАВЛЕНИЕ ПРЕДУПРЕЖДЕНИЯ БЕЗОПАСНОСТИ: 
-        // Вместо innerHTML используем безопасное создание узлов DOM
         const questionTextEl = document.getElementById("question-text");
         questionTextEl.textContent = ""; 
         
@@ -806,6 +809,8 @@
         showQuestion();
     }
 
+    /* ============ ПИРАМИДА ПРОФСОЮЗА ============ */
+
     const unionItems = [
         { id: "item1", name: "Съезд Профсоюза" },
         { id: "item2", name: "Центральный Совет" },
@@ -824,6 +829,8 @@
         "КРК"
     ];
 
+    let unionSelectedItem = null;
+
     function startUnionGame() {
         document.getElementById("start-section").style.display = "none";
         document.getElementById("union-section").style.display = "block";
@@ -837,76 +844,73 @@
 
         pyramidContainer.textContent = "";
         poolContainer.textContent = "";
+        unionSelectedItem = null;
 
         correctOrder.forEach((name, index) => {
             const slot = document.createElement("div");
             slot.className = "slot";
             slot.dataset.expected = name;
-            slot.innerText = `Уровень ${index + 1}`; 
-            
-            slot.addEventListener("dragover", (e) => {
-                e.preventDefault();
-                if (!slot.classList.contains("correct")) {
-                    slot.classList.add("drag-over");
-                }
-            });
+            slot.dataset.index = index;
+            slot.innerText = `Уровень ${index + 1}`;
 
-            slot.addEventListener("dragleave", () => {
-                slot.classList.remove("drag-over");
-            });
-
-            slot.addEventListener("drop", (e) => {
-                e.preventDefault();
-                slot.classList.remove("drag-over");
+            slot.addEventListener("click", () => {
                 if (slot.classList.contains("correct")) return;
 
-                const draggedId = e.dataTransfer.getData("text/plain");
-                const draggedElement = document.getElementById(draggedId);
+                if (!unionSelectedItem) {
+                    slot.innerText = "Выберите ответ!";
+                    slot.classList.add("error-flash");
+                    setTimeout(() => {
+                        if (!slot.classList.contains("correct")) {
+                            slot.innerText = `Уровень ${index + 1}`;
+                            slot.classList.remove("error-flash");
+                        }
+                    }, 900);
+                    return;
+                }
 
-                if (draggedElement) {
-                    if (draggedElement.dataset.name === slot.dataset.expected) {
-                        slot.innerText = draggedElement.dataset.name;
-                        slot.classList.add("correct");
-                        slot.dataset.filled = "true";
-                        draggedElement.remove(); 
-                        checkUnionWin();
-                    } else {
-                        slot.innerText = "Неверно!";
-                        slot.classList.add("error-flash");
-                        setTimeout(() => {
-                            if (!slot.classList.contains("correct")) {
-                                slot.innerText = `Уровень ${parseInt(slot.dataset.index) + 1}`;
-                                slot.classList.remove("error-flash");
-                            }
-                        }, 1000);
-                    }
+                if (unionSelectedItem.dataset.name === slot.dataset.expected) {
+                    slot.innerText = unionSelectedItem.dataset.name;
+                    slot.classList.add("correct");
+                    slot.dataset.filled = "true";
+                    unionSelectedItem.remove();
+                    unionSelectedItem = null;
+                    checkUnionWin();
+                } else {
+                    slot.innerText = "Неверно!";
+                    slot.classList.add("error-flash");
+                    setTimeout(() => {
+                        if (!slot.classList.contains("correct")) {
+                            slot.innerText = `Уровень ${index + 1}`;
+                            slot.classList.remove("error-flash");
+                        }
+                    }, 1000);
                 }
             });
 
-            slot.dataset.index = index;
             pyramidContainer.appendChild(slot);
         });
 
         const shuffledItems = [...unionItems].sort(() => Math.random() - 0.5);
 
         shuffledItems.forEach(item => {
-            const dragItem = document.createElement("div");
-            dragItem.className = "draggable";
-            dragItem.id = item.id;
-            dragItem.innerText = item.name;
-            dragItem.dataset.name = item.name;
-            dragItem.draggable = true;
+            const itemEl = document.createElement("div");
+            itemEl.className = "draggable";
+            itemEl.id = item.id;
+            itemEl.innerText = item.name;
+            itemEl.dataset.name = item.name;
 
-            dragItem.addEventListener("dragstart", (e) => {
-                e.dataTransfer.setData("text/plain", dragItem.id);
-                dragItem.classList.add("dragging");
+            itemEl.addEventListener("click", () => {
+                if (unionSelectedItem === itemEl) {
+                    itemEl.classList.remove("selected");
+                    unionSelectedItem = null;
+                    return;
+                }
+                if (unionSelectedItem) unionSelectedItem.classList.remove("selected");
+                unionSelectedItem = itemEl;
+                itemEl.classList.add("selected");
             });
 
-            dragItem.addEventListener("dragend", () => {
-                dragItem.classList.remove("dragging");
-            });
-
-            poolContainer.appendChild(dragItem);
+            poolContainer.appendChild(itemEl);
         });
     }
 
@@ -916,6 +920,8 @@
             document.getElementById("union-result").style.display = "block";
         }
     }
+
+    /* ============ ПИРАМИДА ППО ============ */
 
     const ppoItems = [
         { id: "ppo1", name: "Собрание(Конференция)" },
@@ -933,6 +939,8 @@
         "КРК"
     ];
 
+    let ppoSelectedItem = null;
+
     function startPpoGame() {
         document.getElementById("start-section").style.display = "none";
         document.getElementById("ppo-section").style.display = "block";
@@ -946,76 +954,73 @@
 
         pyramidContainer.textContent = "";
         poolContainer.textContent = "";
+        ppoSelectedItem = null;
 
         ppoCorrectOrder.forEach((name, index) => {
             const slot = document.createElement("div");
             slot.className = "slot";
             slot.dataset.expected = name;
-            slot.innerText = `Уровень ${index + 1}`; 
-            
-            slot.addEventListener("dragover", (e) => {
-                e.preventDefault();
-                if (!slot.classList.contains("correct")) {
-                    slot.classList.add("drag-over");
-                }
-            });
+            slot.dataset.index = index;
+            slot.innerText = `Уровень ${index + 1}`;
 
-            slot.addEventListener("dragleave", () => {
-                slot.classList.remove("drag-over");
-            });
-
-            slot.addEventListener("drop", (e) => {
-                e.preventDefault();
-                slot.classList.remove("drag-over");
+            slot.addEventListener("click", () => {
                 if (slot.classList.contains("correct")) return;
 
-                const draggedId = e.dataTransfer.getData("text/plain");
-                const draggedElement = document.getElementById(draggedId);
+                if (!ppoSelectedItem) {
+                    slot.innerText = "Выберите ответ!";
+                    slot.classList.add("error-flash");
+                    setTimeout(() => {
+                        if (!slot.classList.contains("correct")) {
+                            slot.innerText = `Уровень ${index + 1}`;
+                            slot.classList.remove("error-flash");
+                        }
+                    }, 900);
+                    return;
+                }
 
-                if (draggedElement) {
-                    if (draggedElement.dataset.name === slot.dataset.expected) {
-                        slot.innerText = draggedElement.dataset.name;
-                        slot.classList.add("correct");
-                        slot.dataset.filled = "true";
-                        draggedElement.remove(); 
-                        checkPpoWin();
-                    } else {
-                        slot.innerText = "Неверно!";
-                        slot.classList.add("error-flash");
-                        setTimeout(() => {
-                            if (!slot.classList.contains("correct")) {
-                                slot.innerText = `Уровень ${parseInt(slot.dataset.index) + 1}`;
-                                slot.classList.remove("error-flash");
-                            }
-                        }, 1000);
-                    }
+                if (ppoSelectedItem.dataset.name === slot.dataset.expected) {
+                    slot.innerText = ppoSelectedItem.dataset.name;
+                    slot.classList.add("correct");
+                    slot.dataset.filled = "true";
+                    ppoSelectedItem.remove();
+                    ppoSelectedItem = null;
+                    checkPpoWin();
+                } else {
+                    slot.innerText = "Неверно!";
+                    slot.classList.add("error-flash");
+                    setTimeout(() => {
+                        if (!slot.classList.contains("correct")) {
+                            slot.innerText = `Уровень ${index + 1}`;
+                            slot.classList.remove("error-flash");
+                        }
+                    }, 1000);
                 }
             });
 
-            slot.dataset.index = index;
             pyramidContainer.appendChild(slot);
         });
 
         const shuffledItems = [...ppoItems].sort(() => Math.random() - 0.5);
 
         shuffledItems.forEach(item => {
-            const dragItem = document.createElement("div");
-            dragItem.className = "draggable";
-            dragItem.id = item.id;
-            dragItem.innerText = item.name;
-            dragItem.dataset.name = item.name;
-            dragItem.draggable = true;
+            const itemEl = document.createElement("div");
+            itemEl.className = "draggable";
+            itemEl.id = item.id;
+            itemEl.innerText = item.name;
+            itemEl.dataset.name = item.name;
 
-            dragItem.addEventListener("dragstart", (e) => {
-                e.dataTransfer.setData("text/plain", dragItem.id);
-                dragItem.classList.add("dragging");
+            itemEl.addEventListener("click", () => {
+                if (ppoSelectedItem === itemEl) {
+                    itemEl.classList.remove("selected");
+                    ppoSelectedItem = null;
+                    return;
+                }
+                if (ppoSelectedItem) ppoSelectedItem.classList.remove("selected");
+                ppoSelectedItem = itemEl;
+                itemEl.classList.add("selected");
             });
 
-            dragItem.addEventListener("dragend", () => {
-                dragItem.classList.remove("dragging");
-            });
-
-            poolContainer.appendChild(dragItem);
+            poolContainer.appendChild(itemEl);
         });
     }
 
@@ -1025,6 +1030,8 @@
             document.getElementById("ppo-result").style.display = "block";
         }
     }
+
+    /* ============ ИНИЦИАЛИЗАЦИЯ ============ */
 
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.category-btn').forEach(btn => {
@@ -1051,12 +1058,12 @@
         });
 
         const unionBackBtn = document.querySelector('.back-btn-trigger');
-        if(unionBackBtn) {
+        if (unionBackBtn) {
             unionBackBtn.addEventListener('click', backToMenu);
         }
 
         const ppoBackBtn = document.querySelector('.ppo-back-trigger');
-        if(ppoBackBtn) {
+        if (ppoBackBtn) {
             ppoBackBtn.addEventListener('click', backToMenu);
         }
     });
