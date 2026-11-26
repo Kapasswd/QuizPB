@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест: Праздники и Нормативные акты</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+        .question-title {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #2c3e50;
+            line-height: 1.4;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        button {
+            padding: 15px;
+            font-size: 15px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            background-color: white;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            line-height: 1.3;
+            font-family: inherit;
+        }
+        button:hover:not(:disabled) {
+            background-color: #ecf0f1;
+            border-color: #95a5a6;
+        }
+        button:disabled {
+            cursor: not-allowed;
+        }
+        .correct {
+            background-color: #d4edda !important;
+            border-color: #28a745 !important;
+            color: #155724;
+        }
+        .incorrect {
+            background-color: #f8d7da !important;
+            border-color: #dc3545 !important;
+            color: #721c24;
+        }
+        .result {
+            text-align: center;
+            display: none;
+        }
+        .result h2 { color: #27ae60; }
+        .restart-btn, .save-btn {
+            margin-top: 20px;
+            text-align: center;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            font-weight: bold;
+            width: 100%;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 15px;
+            font-size: 16px;
+        }
+        .restart-btn:hover, .save-btn:hover { background-color: #2980b9; }
+        .save-btn { background-color: #27ae60; margin-top: 10px;}
+        .save-btn:hover { background-color: #219150; }
+
+        /* Кнопка "Назад" */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            color: #3498db;
+            border: none;
+            padding: 6px 0;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: left;
+            width: auto;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .back-btn:hover:not(:disabled) {
+            background: transparent;
+            border: none;
+            color: #2980b9;
+            text-decoration: underline;
+        }
+
+        /* Стили для таблицы лидеров */
+        .input-name {
+            padding: 12px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 15px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            display: none;
+        }
+        .leaderboard-table th, .leaderboard-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .leaderboard-table th {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+        }
+        .leaderboard-table tr:nth-child(1) td { font-weight: bold; color: #f39c12; }
+        .leaderboard-table tr:nth-child(2) td { font-weight: bold; color: #95a5a6; }
+        .leaderboard-table tr:nth-child(3) td { font-weight: bold; color: #d35400; }
+
+        /* Стили для выбора категории */
+        .category-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .category-btn {
+            padding: 18px;
+            font-size: 17px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            background-color: white;
+            cursor: pointer;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .category-btn:hover {
+            background-color: #ecf0f1;
+            border-color: #3498db;
+            transform: translateY(-2px);
+        }
+        .category-desc {
+            font-size: 13px;
+            color: #777;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Секция выбора категории -->
+    <div id="start-section">
+        <div class="question-title">🎓 Выберите категорию теста</div>
+        <p style="text-align: center; color: #777; margin-top: -10px;">
+            От этого зависит набор вопросов и сложность
+        </p>
+        <div class="category-buttons">
+            <button class="category-btn" onclick="startQuiz('numbers')">
+                <span>📄 Только документы</span>
+                <span class="category-desc"><span class="numbers-count">21</span> вопрос о нормативных актах</span>
+            </button>
+            <button class="category-btn" onclick="startQuiz('dates')">
+                <span>📅 Только даты</span>
+                <span class="category-desc"><span class="dates-count">45</span> вопросов о праздниках</span>
+            </button>
+            <button class="category-btn" onclick="startQuiz('mixed')">
+                <span>🎯 Смешанный</span>
+                <span class="category-desc"><span class="mixed-count">66</span> вопросов: даты + документы</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Секция теста -->
+    <div id="quiz-section" style="display: none;">
+        <button class="back-btn" onclick="backToMenu()">← Назад к выбору категории</button>
+        <div class="header">
+            <span id="question-counter">Вопрос 1 из X</span>
+            <span id="score">Счет: 0</span>
+        </div>
+        <div class="question-title" id="question-text">Загрузка...</div>
+        <div class="options" id="options-container"></div>
+    </div>
+
+    <!-- Секция результатов -->
+    <div class="result" id="result-section">
+        <button class="back-btn" onclick="backToMenu()">← Назад к выбору категории</button>
+        <h2>Тест завершен!</h2>
+        <p>Ваш результат: <span id="final-score">0</span> из <span id="total-questions">0</span></p>
+
+        <input type="text" id="player-name" class="input-name" placeholder="Введите ваше имя" maxlength="20">
+        <button class="save-btn" id="save-score-btn" onclick="saveScore()">Сохранить в таблицу лидеров</button>
+
+        <button class="restart-btn" onclick="location.reload()">Пройти заново</button>
+    </div>
+
+    <!-- Секция таблицы лидеров -->
+    <div id="leaderboard-section" style="display: none;">
+        <button class="back-btn" onclick="backToMenu()">← Назад к выбору категории</button>
+        <h2 style="text-align: center; color: #2c3e50;">🏆 Таблица лидеров</h2>
+        <table class="leaderboard-table" id="leaderboard" style="display: table;">
+            <thead>
+                <tr>
+                    <th>Место</th>
+                    <th>Имя</th>
+                    <th>Счет</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+                <tr><td colspan="3" style="text-align:center;">Загрузка данных...</td></tr>
+            </tbody>
+        </table>
+        <button class="restart-btn" onclick="location.reload()">Пройти тест еще раз</button>
+    </div>
+</div>
+
+<!-- 1. ПОДКЛЮЧАЕМ FIREBASE SDK -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // ⚠️ ВСТАВЬТЕ СЮДА ВАШИ ДАННЫЕ ИЗ FIREBASE ⚠️
+    const firebaseConfig = {
+        apiKey: "ВАШ_API_KEY",
+        authDomain: "ВАШ_ПРОЕКТ.firebaseapp.com",
+        projectId: "ВАШ_ПРОЕКТ",
+        storageBucket: "ВАШ_ПРОЕКТ.appspot.com",
+        messagingSenderId: "ВАШ_ID",
+        appId: "ВАШ_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.saveScore = async function() {
+        const nameInput = document.getElementById("player-name").value.trim();
+        const score = parseInt(document.getElementById("final-score").innerText);
+        const total = window.currentTotal || 66;
+        const category = window.currentCategory || "mixed";
+
+        if (!nameInput) {
+            alert("Пожалуйста, введите ваше имя!");
+            return;
+        }
+
+        const btn = document.getElementById("save-score-btn");
+        btn.disabled = true;
+        btn.innerText = "Сохранение...";
+
+        try {
+            await addDoc(collection(db, "leaderboard"), {
+                name: nameInput,
+                score: score,
+                total: total,
+                category: category,
+                timestamp: new Date()
+            });
+
+            document.getElementById("result-section").style.display = "none";
+            document.getElementById("leaderboard-section").style.display = "block";
+
+            loadLeaderboard();
+        } catch (e) {
+            console.error("Ошибка добавления документа: ", e);
+            alert("Ошибка сохранения. Проверьте настройки Firebase.");
+            btn.disabled = false;
+            btn.innerText = "Сохранить в таблицу лидеров";
+        }
+    };
+
+    async function loadLeaderboard() {
+        const tbody = document.getElementById("leaderboard-body");
+        tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Загрузка...</td></tr>";
+
+        try {
+            const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(10));
+            const querySnapshot = await getDocs(q);
+
+            tbody.innerHTML = "";
+
+            if (querySnapshot.empty) {
+                tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Пока нет результатов. Будьте первым!</td></tr>";
+                return;
+            }
+
+            let rank = 1;
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const total = data.total || 66;
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${rank}</td>
+                    <td>${data.name}</td>
+                    <td>${data.score} / ${total}</td>
+                `;
+                tbody.appendChild(tr);
+                rank++;
+            });
+        } catch (e) {
+            console.error("Ошибка загрузки: ", e);
+            tbody.innerHTML = "<tr><td colspan='3' style='text-align:center; color:red;'>Ошибка загрузки данных</td></tr>";
+        }
+    }
+</script>
+
+<!-- 2. ЛОГИКА САМОГО ТЕСТА -->
+<script>
+    const documents = [
+        { id: "1390", title: "О формировании стипендиального фонда" },
+        { id: "707", title: "Об установлении размера стипендии слушателям подготовительных отделений федеральных вузов" },
+        { id: "1190", title: "О Правилах определения размера платы за коммунальные услуги в общежитиях" },
+        { id: "42", title: "Об отнесении жилого помещения к специализированному жилищному фонду" },
+        { id: "1861", title: "О стипендии Правительства РФ для студентов, курсантов и слушателей" },
+        { id: "273", title: "ФЗ «Об образовании в Российской Федерации»" },
+        { id: "10", title: "ФЗ «О профессиональных союзах, их правах и гарантиях деятельности»" },
+        { id: "188", title: "Жилищный кодекс Российской Федерации" },
+        { id: "489", title: "ФЗ «О молодежной политике в Российской Федерации»" },
+        { id: "1663", title: "Об утверждении Порядка назначения государственной академической и социальной стипендии" },
+        { id: "245", title: "Об утверждении Порядка организации образовательной деятельности по программам ВО" },
+        { id: "822", title: "О порядке и случаях перехода лиц с платного обучения на бесплатное" },
+        { id: "636", title: "Об утверждении Порядка проведения государственной итоговой аттестации (ГИА)" },
+        { id: "303", title: "Об утверждении Порядка и оснований предоставления академического отпуска" },
+        { id: "602", title: "Об утверждении Порядка расследования и учета несчастных случаев с обучающимися" },
+        { id: "284", title: "Об утверждении Порядка применения к обучающимся мер дисциплинарного взыскания и снятия их с указанных обучающихся" },
+        { id: "607", title: "Об утверждении Порядка перевода обучающегося в другую образовательную организацию" },
+        { id: "670", title: "Об утверждении Порядка заполнения, учета и выдачи документов о высшем образовании" },
+        { id: "301", title: "Об утверждении типового порядка предоставления обучающимся жилых помещений в общежитиях" },
+        { id: "1010", title: "О максимальном размере платы за наем жилого помещения в общежитии" },
+        { id: "807", title: "О поддержке студенческих семей" }
+    ];
+
+    const holidaysData = [
+        { date: "3 декабря", name: "День неизвестного солдата" },
+        { date: "5 декабря", name: "Международный день добровольца и волонтера" },
+        { date: "9 декабря", name: "День героев Отечества России" },
+        { date: "12 декабря", name: "День Конституции России" },
+        { date: "21 января", name: "День аспиранта" },
+        { date: "25 января", name: "День студента (Татьянин день)" },
+        { date: "8 февраля", name: "День российской науки" },
+        { date: "17 февраля", name: "День российских студенческих отрядов" },
+        { date: "21 февраля", name: "Международный день родного языка" },
+        { date: "23 февраля", name: "День защитника Отечества" },
+        { date: "27 февраля", name: "Всемирный день НКО" },
+        { date: "8 марта", name: "Международный женский день" },
+        { date: "18 марта", name: "День воссоединения Крыма с Россией" },
+        { date: "23 марта", name: "Дата создания ФНПР России" },
+        { date: "25 марта", name: "День работника культуры России" },
+        { date: "7 апреля", name: "Всемирный день здоровья" },
+        { date: "12 апреля", name: "День космонавтики" },
+        { date: "20 апреля", name: "Национальный день донора в России" },
+        { date: "24 апреля", name: "Международный день солидарности молодежи" },
+        { date: "28 апреля", name: "Международный день охраны труда" },
+        { date: "1 мая", name: "Праздник Весны и Труда" },
+        { date: "7 мая", name: "Вступление в должность Президента РФ" },
+        { date: "9 мая", name: "День Победы" },
+        { date: "12 мая", name: "Международный день матери" },
+        { date: "15 мая", name: "Всемирный день семьи" },
+        { date: "21 мая", name: "Создание СКС Профсоюза" },
+        { date: "1 июня", name: "Международный день защиты детей" },
+        { date: "6 июня", name: "Пушкинский день (День русского языка)" },
+        { date: "8 июня", name: "День социального работника" },
+        { date: "12 июня", name: "День России" },
+        { date: "22 июня", name: "День памяти и скорби" },
+        { date: "Последняя суббота июня", name: "День молодежи" },
+        { date: "8 июля", name: "День семьи, любви и верности" },
+        { date: "12 августа", name: "Международный день молодежи" },
+        { date: "22 августа", name: "День государственного флага" },
+        { date: "1 сентября", name: "День знаний" },
+        { date: "3 сентября", name: "День солидарности в борьбе с терроризмом" },
+        { date: "27 сентября", name: "Создание Общероссийского Профсоюза образования" },
+        { date: "7 октября", name: "Всемирный день действий профсоюзов за достойный труд" },
+        { date: "4 ноября", name: "День народного единства" },
+        { date: "10 ноября", name: "Всемирный день молодежи и Всемирный день науки" },
+        { date: "17 ноября", name: "Международный день студента" },
+        { date: "19 ноября", name: "День преподавателя высшей школы" },
+        { date: "30 ноября", name: "День Герба РФ" },
+        { date: "Последнее воскресенье ноября", name: "День матери" }
+    ];
+
+    // Заполняем счётчики на стартовом экране
+    document.querySelector('.numbers-count').textContent = documents.length;
+    document.querySelector('.dates-count').textContent = holidaysData.length;
+    document.querySelector('.mixed-count').textContent = documents.length + holidaysData.length;
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let finalQuestions = [];
+    let selectedCategory = 'mixed';
+    let pendingTimeout = null; // для отмены отложенного перехода при возврате
+
+    window.currentTotal = documents.length + holidaysData.length;
+    window.currentCategory = 'mixed';
+
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    function startQuiz(category) {
+        selectedCategory = category;
+        window.currentCategory = category;
+
+        document.getElementById("start-section").style.display = "none";
+        document.getElementById("quiz-section").style.display = "block";
+        document.getElementById("result-section").style.display = "none";
+        document.getElementById("leaderboard-section").style.display = "none";
+
+        initQuiz();
+    }
+
+    // Возврат к выбору категории
+    function backToMenu() {
+        // Отменяем отложенный переход, если он был
+        if (pendingTimeout) {
+            clearTimeout(pendingTimeout);
+            pendingTimeout = null;
+        }
+
+        // Сброс состояния
+        currentQuestionIndex = 0;
+        score = 0;
+        finalQuestions = [];
+
+        // Сброс интерфейса
+        document.getElementById("score").innerText = "Счет: 0";
+        document.getElementById("options-container").innerHTML = "";
+        document.getElementById("question-counter").innerText = "Вопрос 1 из X";
+        document.getElementById("question-text").innerHTML = "";
+        document.getElementById("player-name").value = "";
+
+        const saveBtn = document.getElementById("save-score-btn");
+        saveBtn.disabled = false;
+        saveBtn.innerText = "Сохранить в таблицу лидеров";
+
+        // Переключение секций
+        document.getElementById("quiz-section").style.display = "none";
+        document.getElementById("result-section").style.display = "none";
+        document.getElementById("leaderboard-section").style.display = "none";
+        document.getElementById("start-section").style.display = "block";
+    }
+
+    // Делаем функции глобальными (для onclick в HTML)
+    window.startQuiz = startQuiz;
+    window.backToMenu = backToMenu;
+
+    function initQuiz() {
+        let docQuestions = [];
+        let holidayQuestions = [];
+
+        if (selectedCategory === 'mixed' || selectedCategory === 'numbers') {
+            documents.forEach(doc => {
+                const wrongOptions = documents
+                    .filter(d => d.id !== doc.id)
+                    .sort(() => 0.5 - Math.random())
+                    .slice(0, 3)
+                    .map(d => d.title);
+
+                docQuestions.push({
+                    text: `Какой документ имеет номер <b>${doc.id}</b>?`,
+                    correctAnswer: doc.title,
+                    options: shuffle([doc.title, ...wrongOptions])
+                });
+            });
+        }
+
+        if (selectedCategory === 'mixed' || selectedCategory === 'dates') {
+            holidaysData.forEach(h => {
+                const askForDate = Math.random() > 0.5;
+                if (askForDate) {
+                    const wrongDates = holidaysData
+                        .filter(item => item.date !== h.date)
+                        .sort(() => 0.5 - Math.random())
+                        .slice(0, 3)
+                        .map(item => item.date);
+
+                    holidayQuestions.push({
+                        text: `Когда отмечается <b>${h.name}</b>?`,
+                        correctAnswer: h.date,
+                        options: shuffle([h.date, ...wrongDates])
+                    });
+                } else {
+                    const wrongNames = holidaysData
+                        .filter(item => item.name !== h.name)
+                        .sort(() => 0.5 - Math.random())
+                        .slice(0, 3)
+                        .map(item => item.name);
+
+                    holidayQuestions.push({
+                        text: `Какой праздник отмечается <b>${h.date}</b>?`,
+                        correctAnswer: h.name,
+                        options: shuffle([h.name, ...wrongNames])
+                    });
+                }
+            });
+        }
+
+        shuffle(docQuestions);
+        shuffle(holidayQuestions);
+
+        let combinedQuestions = [];
+
+        if (selectedCategory === 'mixed') {
+            let maxLength = Math.max(docQuestions.length, holidayQuestions.length);
+            for (let i = 0; i < maxLength; i++) {
+                if (i < docQuestions.length) combinedQuestions.push(docQuestions[i]);
+                if (i < holidayQuestions.length) combinedQuestions.push(holidayQuestions[i]);
+            }
+        } else if (selectedCategory === 'numbers') {
+            combinedQuestions = docQuestions;
+        } else {
+            combinedQuestions = holidayQuestions;
+        }
+
+        finalQuestions = shuffle(combinedQuestions);
+        window.currentTotal = finalQuestions.length;
+        document.getElementById("total-questions").innerText = finalQuestions.length;
+
+        showQuestion();
+    }
+
+    function showQuestion() {
+        if (currentQuestionIndex >= finalQuestions.length) {
+            document.getElementById("quiz-section").style.display = "none";
+            document.getElementById("result-section").style.display = "block";
+            document.getElementById("final-score").innerText = score;
+            return;
+        }
+
+        const q = finalQuestions[currentQuestionIndex];
+        document.getElementById("question-counter").innerText = `Вопрос ${currentQuestionIndex + 1} из ${finalQuestions.length}`;
+        document.getElementById("question-text").innerHTML = q.text;
+
+        const optionsContainer = document.getElementById("options-container");
+        optionsContainer.innerHTML = "";
+
+        q.options.forEach(option => {
+            const btn = document.createElement("button");
+            btn.innerText = option;
+            btn.onclick = () => checkAnswer(btn, option, q.correctAnswer);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedBtn, selectedOption, correctAnswer) {
+        const allButtons = document.querySelectorAll("#options-container button");
+        allButtons.forEach(btn => btn.disabled = true);
+
+        if (selectedOption === correctAnswer) {
+            selectedBtn.classList.add("correct");
+            score++;
+            document.getElementById("score").innerText = `Счет: ${score}`;
+            pendingTimeout = setTimeout(nextQuestion, 500);
+        } else {
+            selectedBtn.classList.add("incorrect");
+            allButtons.forEach(btn => {
+                if (btn.innerText === correctAnswer) {
+                    btn.classList.add("correct");
+                }
+            });
+            pendingTimeout = setTimeout(nextQuestion, 3000);
+        }
+    }
+
+    function nextQuestion() {
+        pendingTimeout = null;
+        currentQuestionIndex++;
+        showQuestion();
+    }
+
+    // Тест стартует только после клика по кнопке категории
+</script>
+
+</body>
+</html>
